@@ -1,6 +1,45 @@
+import numpy as np
+
+from data_generation import createData
+from models import training_CNN_model, training_FFNN_model
+from postprocessing import postprocessing_low_level_d3, postprocessing_low_level_d5
+from stabilizer_set import generate_stabilizer_set 
+
+
+
 prob_array = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 
               0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
               0.1 ]
+
+
+
+restricted_d3 = [[0,0], [0,2], [0,3], 
+                [1,0], 
+                [2,3],  
+                [3,0], [3,1], [3,3]] 
+
+
+restricted_d5 = [[0,0], [0,2], [0,4], [0,5], 
+                [1,0], 
+                [2,5], 
+                [3,0], 
+                [4,5],   
+                [5,0], [5,1], [5,3], [5,5]]  
+
+
+stabilizerX_d3 = [[0,1], [7,8], [1,2,4,5], [3,4,6,7]]
+
+stabilizerZ_d3 = [[2,5], [3,6], [0,1,3,4], [4,5,7,8]]
+
+
+stabilizerX_d5 = [[0,1], [2,3], [21,22], [23,24], 
+                  [1,2,6,7], [3,4,8,9], [5,6,10,11], [7,8,12,13], 
+                  [11,12,16,17], [13,14,18,19], [15,16,20,21], [17,18,22,23]]
+
+stabilizerZ_d5 = [[4,9], [14,19], [5,10], [15,20], 
+                  [0,1,5,6], [2,3,7,8], [6,7,11,12], [8,9,13,14], 
+                  [10,11,15,16], [12,13,17,18], [16,17,21,22], [18,19,23,24]] 
+
 
 
 ############################
@@ -44,6 +83,13 @@ for i in range(0, len(prob_array)):
     ## --------------------------------
     ###################################
 
+
+    if(d==3):
+        restricted = restricted_d3
+    elif(d==5):
+        restricted = restricted_d5
+
+
     for instance in range(numinst):
         print("*"*40)
         print("*"*40)
@@ -56,18 +102,42 @@ for i in range(0, len(prob_array)):
                             pz = probZ)
 
 
-        X_test, y_pred, y_test = training_complex_CNN_model(dataset, d, 
-                                                            split = split, 
-                                                            epochs = epochs, 
-                                                            batch_size = batch_size)
         
 
-        logicalerror, logicalX, logicalZ, logicalY, acc_lld = postprocessing_equiv_logical_LOWLEVEL(X_test, 
-                                                                                                    y_pred, 
-                                                                                                    y_test, 
-                                                                                                    d, 
-                                                                                                    stabilizer_set_X,   
-                                                                                                    stabilizer_set_Z)
+
+        X_test, y_pred, y_test = training_FFNN_model(dataset, d, 
+                                                    split = split, 
+                                                    epochs = epochs, 
+                                                    batch_size = batch_size)
+        
+
+        if(d==3):
+
+            stabilizer_set_X = generate_stabilizer_set(stabilizerX_d3) 
+            stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d3)
+
+            logicalerror, logicalX, logicalZ, logicalY, acc_lld = postprocessing_low_level_d3(X_test, 
+                                                                                                y_pred, 
+                                                                                                y_test, 
+                                                                                                d, 
+                                                                                                stabilizer_set_X,   
+                                                                                                stabilizer_set_Z) 
+
+
+        elif(d==5):
+
+            stabilizer_set_X = generate_stabilizer_set(stabilizerX_d5) 
+            stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d5) 
+
+            logicalerror, logicalX, logicalZ, logicalY, acc_lld = postprocessing_low_level_d5(X_test, 
+                                                                                                y_pred, 
+                                                                                                y_test, 
+                                                                                                d, 
+                                                                                                stabilizer_set_X,   
+                                                                                                stabilizer_set_Z) 
+
+
+        
 
 
         sum_logicalerror += logicalerror 

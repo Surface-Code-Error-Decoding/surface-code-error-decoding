@@ -1,16 +1,6 @@
-restricted_d3 = [[0,0], [0,2], [0,3], 
-                [1,0], 
-                [2,3],  
-                [3,0], [3,1], [3,3]] 
-
-
-restricted_d5 = [[0,0], [0,2], [0,4], [0,5], 
-                [1,0], 
-                [2,5], 
-                [3,0], 
-                [4,5], 
-                [5,0], [5,1], [5,3], [5,5]] 
-
+import numpy as np
+import random
+import csv
 
 def generateError(p, d, px, py, pz):
 

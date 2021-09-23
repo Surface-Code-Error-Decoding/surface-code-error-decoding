@@ -1,3 +1,5 @@
+import itertools
+
 def generate_stabilizer_set(stabilizer):
 
     combinations_list = []
