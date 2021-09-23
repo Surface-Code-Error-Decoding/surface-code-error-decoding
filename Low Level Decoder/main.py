@@ -1,4 +1,7 @@
 import numpy as np
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set_theme()
 
 from data_generation import createData
 from models import training_CNN_model, training_FFNN_model
@@ -85,9 +88,15 @@ for i in range(0, len(prob_array)):
 
 
     if(d==3):
-        restricted = restricted_d3
+        restricted = restricted_d3 
+        stabilizer_set_X = generate_stabilizer_set(stabilizerX_d3) 
+        stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d3) 
+
     elif(d==5):
-        restricted = restricted_d5
+        restricted = restricted_d5 
+        stabilizer_set_X = generate_stabilizer_set(stabilizerX_d5) 
+        stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d5) 
+
 
 
     for instance in range(numinst):
@@ -112,10 +121,6 @@ for i in range(0, len(prob_array)):
         
 
         if(d==3):
-
-            stabilizer_set_X = generate_stabilizer_set(stabilizerX_d3) 
-            stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d3)
-
             logicalerror, logicalX, logicalZ, logicalY, acc_lld = postprocessing_low_level_d3(X_test, 
                                                                                                 y_pred, 
                                                                                                 y_test, 
@@ -125,10 +130,6 @@ for i in range(0, len(prob_array)):
 
 
         elif(d==5):
-
-            stabilizer_set_X = generate_stabilizer_set(stabilizerX_d5) 
-            stabilizer_set_Z = generate_stabilizer_set(stabilizerZ_d5) 
-
             logicalerror, logicalX, logicalZ, logicalY, acc_lld = postprocessing_low_level_d5(X_test, 
                                                                                                 y_pred, 
                                                                                                 y_test, 
@@ -165,7 +166,7 @@ for i in range(0, len(prob_array)):
 
 
 
-file_name = "Accuracy_Error_" + str(prob_array[0]) + "-" + str(prob_array[-1]) + "_complex-CNN_d=" + str(d) + ".csv"
+file_name = "Accuracy_Error_" + str(prob_array[0]) + "-" + str(prob_array[-1]) + "_LLD_d=" + str(d) + ".csv"
 
 with open(file_name, "ab") as f:
     np.savetxt(f, np.array([prob_array, 
@@ -173,4 +174,37 @@ with open(file_name, "ab") as f:
                             logicalX_lld_list, 
                             logicalZ_lld_list, 
                             logicalY_lld_list, 
-                            acc_lld_list]),  delimiter=",", fmt="%f")
+                            acc_lld_list]),  delimiter=",", fmt="%f") 
+
+
+
+plt.figure(0)
+plt.plot(prob_array, acc_lld_list, '.--', label='accuracy')
+plt.xlabel("Physical Error Probability")
+plt.ylabel("LLD Accuracy")
+plt.legend()    
+plt.title('LLD_Accuracy_d='+str(d))
+plt.savefig('LLD_Accuracy_d='+str(d)+'.png') 
+
+
+
+
+plt.figure(1)
+xpoints = ypoints = plt.xlim()
+
+plt.plot(prob_array, logicalerror_lld_list, '.-',label='depol')
+plt.plot(prob_array, logicalX_lld_list, '.--',label='X')
+plt.plot(prob_array, logicalZ_lld_list, '.--',label='Z')
+plt.plot(prob_array, logicalY_lld_list, '.--',label='Y')
+
+plt.plot(xpoints, ypoints, color="cyan", label ='y=x')
+
+axes = plt.gca()
+axes.set_ylim([0,1])
+
+axes.set_xlim([0,prob_array[-1]]) 
+plt.xlabel("Physical Error Probability")
+plt.ylabel("Logical Error Probability")
+plt.legend()   
+plt.title('LLD_Error_d='+str(d))
+plt.savefig('LLD_Error_d='+str(d)+'.png')
